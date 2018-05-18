@@ -1,6 +1,7 @@
 from transponder import Transponder
 from tornado.testing import AsyncTestCase, ExpectLog, gen_test
 from tornado import gen
+import json
 import pytest
 
 
@@ -21,7 +22,9 @@ class TestTransponder(AsyncTestCase):
         # check that client connects to RabbitMQ
         with ExpectLog('mqclient', 'Channel opened'):
             client = MyClient(
-                **self._mqparams
+                **self._mqparams,
+                name="Name of actor",
+                about="Description of this actor"
             )
             yield gen.sleep(1)
 
@@ -34,9 +37,34 @@ class TestTransponder(AsyncTestCase):
         # asker--[question]-->rabbitmq->responder--[answer]-->rabbitmq->asker
         result = yield client.send_query(
             exchange="amqp.topic",
-            routing_key="question",
+            routing_key="status",
             body="is anybody out there?",
         )
-        assert result == b"yup. it's me"
+
+        def is_valid_result(result):
+            assert 'exchange' in result
+            assert 'queue' in result
+            assert 'hostname' in result
+            assert 'main' in result
+            assert 'name' in result
+            assert 'about' in result
+
+        result = json.loads(result.decode('utf8'))
+        is_valid_result(result)
+
+        # check that we can do RPC and gather results from multiple publishers
+        # asker--[question]-->rabbitmq->responder--[answer]-->rabbitmq->asker
+        result = yield client.send_query(
+            exchange="amqp.topic",
+            routing_key="status",
+            body="is anybody out there?",
+            gather_timeout=1
+        )
+        results = []
+        for basic_deliver, basic_propertis, body in result:
+            results.append(json.loads(body.decode('utf8')))
+
+        for result in results:
+            is_valid_result(result)
 
         self.stop()

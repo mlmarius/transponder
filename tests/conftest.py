@@ -14,7 +14,7 @@ def mqparams():
     mquri = f'amqp://{mquser}:{mqpass}@{mqhost}:{mqport}/%2F'
     mqexcname = 'amqp.topic'
     mqexctype = 'topic'
-    mqrk = 'ping, quake.#, question'
+    mqrk = 'ping, quake.#, question, status'
 
     return {
         'mqhost': mqhost,

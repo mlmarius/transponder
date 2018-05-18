@@ -6,6 +6,9 @@ import logging
 import datetime
 from tornado.concurrent import Future
 from . import mqclient
+import platform
+import json
+import __main__
 
 LOGGER = logging.getLogger('mqmanager')
 
@@ -13,11 +16,17 @@ LOGGER = logging.getLogger('mqmanager')
 class Transponder(object):
 
     def __init__(self, *args, **kwargs):
+        '''
+        include "status" in routing keys in order to automatically respond to
+        status interogations
+        '''
         self.queries = {}
         self._client = mqclient.MQClient(
             **kwargs,
             handler=self.handle_message
         )
+        self._name = kwargs.get('name')
+        self._about = kwargs.get('about')
         self._client.prepare()
 
     def handle_message(self, unused_channel, basic_deliver, properties, body):
@@ -44,8 +53,29 @@ class Transponder(object):
         LOGGER.info('Handling RPC query')
         newprops = pika.BasicProperties(correlation_id=properties.correlation_id)
         # beware of the '' exchange. We use this in order to publish directly to the channel
-        response = self.get_query_response(basic_deliver, properties, body)
+        if basic_deliver.routing_key == 'status':
+            response = self.get_status_reply()
+        else:
+            response = self.get_query_response(basic_deliver, properties, body)
         self.publish(exchange='', routing_key=properties.reply_to, properties=newprops, body=response)
+
+    def get_status_reply(self):
+        data = {
+            'exchange': {
+                'name': self._client._exchange_name,
+                'type': self._client._exchange_type
+            },
+            'queue': {
+                'name': self._client._queue_name,
+                'bindings': self._client._routing_keys
+            },
+            'hostname': platform.node(),
+            'main': __main__.__file__,
+            'name': self._name,
+            'about': self._about
+        }
+
+        return json.dumps(data)
 
     def get_query_response(self, basic_deliver, properties, body):
         raise Exception("Method not implemented")
