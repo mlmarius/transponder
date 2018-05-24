@@ -136,6 +136,15 @@ setup(
     # For an analysis of "install_requires" vs pip's requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
     # install_requires=['peppercorn'],  # Optional
+    install_requires=[
+        'tornado',
+        'python-dateutil>=2.7.2',
+        # 'pika>=0.12.0b3'
+    ],
+
+    dependency_links=[
+        'git+https://github.com/pika/pika.git@5a8c8e239212411d664cceac77a3468923e33aa8#egg=pika-0.11.3.alpha'
+    ],
 
     # List additional groups of dependencies here (e.g. development
     # dependencies). Users will be able to install these using the "extras"
