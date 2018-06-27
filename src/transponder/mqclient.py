@@ -180,7 +180,7 @@ class MQClient(object):
         # self._channel.exchange_declare(self.on_exchange_declareok,
         #                                exchange_name,
         #                                self.EXCHANGE_TYPE)
-        self._channel.exchange_declare(self._exchange_name, self._exchange_type, callback=self.on_exchange_declareok)
+        self._channel.exchange_declare(self._exchange_name, self._exchange_type, callback=self.on_exchange_declareok, durable=True)
 
     def on_exchange_declareok(self, unused_frame):
         """Invoked by pika when RabbitMQ has finished the Exchange.Declare RPC
