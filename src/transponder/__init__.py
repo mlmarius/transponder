@@ -16,19 +16,20 @@ LOGGER = logging.getLogger('mqmanager')
 class ClientProperties(object):
     '''Pass client properties that will be shown in the RabbitMQ admin interface'''
 
-    def __init__(self, product, information, capabilities=None, version=None):
+    def __init__(self, product, information, version=None):
         self.product = product
         self.information = information
-        self.capabilities = capabilities
-        if self.capabilities is None:
-            self.capabilities = {
-                'authentication_failure_close': True,
-                'basic.nack': True,
-                'connection.blocked': True,
-                'consumer_cancel_notify': True,
-                'publisher_confirms': True
-            }
-        self.version = version or 0.1
+        self.version = version or '0.1'
+
+    def __set__(self, obj, value):
+        pass
+
+    def __get__(self, obj, spam):
+        return {
+            "product": self.product,
+            "information": self.information,
+            "version": self.version
+        }
 
 
 class Transponder(object):

@@ -12,14 +12,7 @@ LOGGER = logging.getLogger('mqclient')
 def get_parameters_class(*args, **kwargs):
     if isinstance(kwargs.get('client_properties'), transponder.ClientProperties):
         rez = pika.URLParameters
-
-        class ClientPropertiesProp(object):
-            def __get__(self, instance, owner):
-                return kwargs.get('client_properties')
-            def __set__(self, instance, value):
-                pass
-
-        rez.client_properties = ClientPropertiesProp()
+        rez._client_properties = kwargs.get('client_properties')
         return rez
     else:
         return pika.URLParameters
@@ -125,7 +118,7 @@ class MQClient(object):
         self._channel = None
         if self._closing is not True:
             LOGGER.warning('Connection closed, reopening in 5 seconds: (%s) %s',
-                            reply_code, reply_text)
+                           reply_code, reply_text)
             self._connection.add_timeout(self._reconnect_timeout, self.prepare)
 
     # def reconnect(self):
@@ -180,7 +173,7 @@ class MQClient(object):
         :param str reply_text: The text reason the channel was closed
         """
         LOGGER.warning('Channel %i was closed: (%s) %s',
-                        channel, reply_code, reply_text)
+                       channel, reply_code, reply_text)
         self._connection.close()
 
     def setup_exchange(self, exchange_name):
@@ -278,8 +271,7 @@ class MQClient(object):
         """
         LOGGER.info('Issuing consumer related RPC commands')
         self.add_on_cancel_callback()
-        self._consumer_tag = self._channel.basic_consume(self.on_message,
-                                                            self._queue_name)
+        self._consumer_tag = self._channel.basic_consume(self.on_message, self._queue_name)
 
     def add_on_cancel_callback(self):
         """Add a callback that will be invoked if RabbitMQ cancels the consumer
@@ -353,13 +345,6 @@ class MQClient(object):
         LOGGER.info('Closing the channel')
         self._channel.close()
 
-    # def run(self):
-    #     """Run the example consumer by connecting to RabbitMQ and then
-    #     starting the IOLoop to block and allow the SelectConnection to operate.
-    #     """
-    #     self._connection = self.connect()
-    #     self._connection.ioloop.start()
-
     def stop(self):
         """Cleanly shutdown the connection to RabbitMQ by stopping the consumer
         with RabbitMQ. When RabbitMQ confirms the cancellation, on_cancelok
@@ -374,6 +359,9 @@ class MQClient(object):
         self._closing = True
         self.stop_consuming()
         LOGGER.info('Stopped')
+
+    def publish(self, *args, **kwargs):
+        self._channel.basic_publish(*args, **kwargs)
 
     def close_connection(self):
         """This method closes the connection to RabbitMQ."""

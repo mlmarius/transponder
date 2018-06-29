@@ -43,7 +43,12 @@ def main():
         mqpass=mqpass,
         mqexcname=mqexcname,
         mqexctype=mqexctype,
-        routing_key=mqrk
+        routing_key=mqrk,
+        client_properties=transponder.ClientProperties(
+            product="TransponderTestClient",
+            information="testing transponder client",
+            version="0.0.1"
+        )
     )
 
     signal.signal(signal.SIGINT, sig_exit)
