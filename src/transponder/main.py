@@ -15,7 +15,7 @@ def sig_exit(signum, frame):
 
 def do_stop(signum, frame):
     logging.warning('Exiting application')
-    tornado.ioloop.IOLoop.instance().add_callback(client.stop)
+    # tornado.ioloop.IOLoop.instance().add_callback(client.stop)
     # client.stop()
     logging.info("Application terminated")
     tornado.ioloop.IOLoop.instance().stop()

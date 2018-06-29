@@ -2,6 +2,7 @@ from pika import adapters
 import pika
 import logging
 from tornado import gen
+import tornado.ioloop
 import uuid
 import functools
 import transponder
@@ -88,7 +89,8 @@ class MQClient(object):
         self._connection = self.connect()
 
     def on_connection_open_error(self, connection, exc):
-        self._connection.add_timeout(self._reconnect_timeout, self.prepare)
+        LOGGER.info("CONNECTION ERRROR")
+        tornado.ioloop.IOLoop.current().add_callback(self.on_connection_closed, None)
 
     def on_connection_open(self, unused_connection):
         """This method is called by pika once the connection to RabbitMQ has
@@ -107,7 +109,7 @@ class MQClient(object):
         LOGGER.info('Adding connection close callback')
         self._connection.add_on_close_callback(self.on_connection_closed)
 
-    def on_connection_closed(self, connection, reply_code, reply_text):
+    def on_connection_closed(self, connection, reply_code=None, reply_text=None):
         """This method is invoked by pika when the connection to RabbitMQ is
         closed unexpectedly. Since it is unexpected, we will reconnect to
         RabbitMQ if it disconnects.
