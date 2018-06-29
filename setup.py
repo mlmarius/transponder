@@ -139,11 +139,7 @@ setup(
     install_requires=[
         'tornado',
         'python-dateutil>=2.7.2',
-        # 'pika>=0.12.0b3'
-    ],
-
-    dependency_links=[
-        'git+https://github.com/pika/pika.git@5a8c8e239212411d664cceac77a3468923e33aa8#egg=pika-0.11.3.alpha'
+        'pika>=0.12.0'
     ],
 
     # List additional groups of dependencies here (e.g. development

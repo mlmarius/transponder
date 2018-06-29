@@ -13,6 +13,24 @@ import __main__
 LOGGER = logging.getLogger('mqmanager')
 
 
+class ClientProperties(object):
+    '''Pass client properties that will be shown in the RabbitMQ admin interface'''
+
+    def __init__(self, product, information, capabilities=None, version=None):
+        self.product = product
+        self.information = information
+        self.capabilities = capabilities
+        if self.capabilities is None:
+            self.capabilities = {
+                'authentication_failure_close': True,
+                'basic.nack': True,
+                'connection.blocked': True,
+                'consumer_cancel_notify': True,
+                'publisher_confirms': True
+            }
+        self.version = version or 0.1
+
+
 class Transponder(object):
 
     def __init__(self, *args, **kwargs):
@@ -28,6 +46,10 @@ class Transponder(object):
         self._name = kwargs.get('name')
         self._about = kwargs.get('about')
         self._client.prepare()
+
+    def stop(self):
+        self._client.stop()
+        LOGGER.info("Client stoped consuming")
 
     def handle_message(self, unused_channel, basic_deliver, properties, body):
         # routing_key = basic_deliver.routing_key
