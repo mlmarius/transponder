@@ -50,7 +50,8 @@ class MQClient(object):
         mqport = kwargs['mqport']
         mquser = kwargs['mquser']
         mqpass = kwargs['mqpass']
-        mquri = f'amqp://{mquser}:{mqpass}@{mqhost}:{mqport}/%2F'
+        mqprotocol = kwargs.get('mqprotocol', 'amqp')  # can be "amqp" or "amqps"
+        mquri = f'{mqprotocol}://{mquser}:{mqpass}@{mqhost}:{mqport}/%2F'
         mqexcname = kwargs['mqexcname']
         mqexctype = kwargs['mqexctype']
         mqrk = kwargs['routing_key']  # noqa

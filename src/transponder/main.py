@@ -35,6 +35,7 @@ def main():
     mqexcname = os.environ.get('MQEXCNAME')
     mqexctype = os.environ.get('MQEXCTYPE')
     mqrk = os.environ.get('MQRK')
+    mqprotocol = os.environ.get('MQPROTOCOL', 'amqp')
 
     client = transponder.Transponder(
         mqhost=mqhost,
@@ -44,6 +45,7 @@ def main():
         mqexcname=mqexcname,
         mqexctype=mqexctype,
         routing_key=mqrk,
+        mqprotocol=mqprotocol,
         client_properties=transponder.ClientProperties(
             product="TransponderTestClient",
             information="testing transponder client",
